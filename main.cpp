@@ -8,7 +8,6 @@
 using namespace std;
 
 int init_numpy(){
-	//初始化 numpy //执行环境，主要是导入包，python2.7用void返回类型，python3.0以上用int返回类型
     import_array();
 }
 
@@ -21,32 +20,60 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	init_numpy();
+	
 	PyRun_SimpleString("import sys");      
 	PyRun_SimpleString("sys.path.append('./')"); 
+	
 	PyObject *pModule = NULL;
-	pModule = PyImport_ImportModule("pyfun");  //导入hello.py 
+	pModule = PyImport_ImportModule("func");  //导入pyfun.py 
 	if (!pModule)
 	{
 		printf("not found .py file\n");
+		return 0;
 	}
 
 	PyObject *pFunc = NULL;
 	PyObject *pValue = NULL;
 	PyObject *pArgs=NULL;
-	PyObject *pList=NULL;
+	//PyObject *pList=NULL;
   	
-
 	cout<< " call : "<<endl;
 	pFunc = PyObject_GetAttrString(pModule, "func"); 
 	pArgs=PyTuple_New(3);
 
-	PyTuple_SetItem(pArgs, 0, Py_BuildValue("[f,f]", 1.0,3.0)); 
-	PyTuple_SetItem(pArgs, 1, Py_BuildValue("[f,f]", 2.0, 4.0));
-	PyTuple_SetItem(pArgs, 2, Py_BuildValue("[f,f,f]", 1.0, 5.0, 7.0)); 
+	//PyTuple_SetItem(pArgs, 0, Py_BuildValue("[f,f]", 1.0,3.0)); 
+	//PyTuple_SetItem(pArgs, 1, Py_BuildValue("[f,f]", 2.0, 4.0));
+	//PyTuple_SetItem(pArgs, 2, Py_BuildValue("[f,f,f]", 1.0, 5.0, 7.0)); 
 	
-	// 传递 numpy 参数
-	double CArrays[3][3] = {{1.3, 2.4, 5.6}, {4.5, 7.8, 8.9}, {1.7, 0.4, 0.8}};
-	npy_intp Dims[2] = {3, 3};
+	double aArrays[5] = {1.0,2.0,3.0,4.0,5.0};
+	
+	double bArrays[3][5] = {{1.0, 1.0, 1.0,1.0,1.0}, 
+							{2.0, 2.0, 2.0,2.0,2.0},
+							{3.0, 3.0, 3.0,3.0,3.0}};
+							
+	double cArrays[4][3] = {{1.0, 1.0, 1.0}, 
+							{2.0, 2.0, 2.0},
+							{3.0, 3.0, 3.0},
+							{1.0, 1.0, 1.0}};
+							
+    double dArrays[3][5][2] = {{{-3., -1}, {-3., -1.}, {-3., -1.}, {-3., -1}, {-3., -1}},
+							   {{-2., -2}, {-2., -2.}, {-2., -2.}, {-2., -2}, {-2., -2}},
+							   {{-1., -3}, {-1., -3.}, {-1., -3.}, {-1., -3}, {-1., -3}}		
+							  };						
+	
+	npy_intp  aDims[1] = {5};
+	npy_intp  bDims[2] = {3, 5};
+	//npy_intp  cDims[2] = {4, 3};
+	npy_intp  dDims[3] = {3, 5, 2};
+	
+	PyObject *pa  = PyArray_SimpleNewFromData(1, aDims, NPY_DOUBLE, aArrays);
+	PyObject *pb  = PyArray_SimpleNewFromData(2, bDims, NPY_DOUBLE, bArrays);
+	//PyObject *pc  = PyArray_SimpleNewFromData(2, cDims, NPY_DOUBLE, cArrays);
+	PyObject *pc  = PyArray_SimpleNewFromData(3, dDims, NPY_DOUBLE, dArrays);
+	
+	PyTuple_SetItem(pArgs, 0, pa);
+	PyTuple_SetItem(pArgs, 1, pb);
+	PyTuple_SetItem(pArgs, 2, pc);
 	
 	pValue = PyObject_CallObject(pFunc, pArgs);
 	cout<< " \n ====================\n result : "<<endl;
@@ -56,8 +83,15 @@ int main(int argc, char* argv[])
 	//}
 	
 	//cout << PyLong_AsLong(pValue) << endl;
+	/*Py_DECREF(pModule);
+	Py_DECREF(pFunc);
+	Py_DECREF(pArgs);
+	Py_DECREF(pValue);
+	Py_DECREF(pa);
+	Py_DECREF(pb);
+	Py_DECREF(pc);*/
 
-	Py_Finalize(); /* 结束Python解释器，释放资源 */
+	Py_Finalize();
 
 	return 0;
 }
